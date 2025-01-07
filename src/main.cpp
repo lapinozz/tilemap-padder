@@ -63,52 +63,54 @@ int main()
             {
                 sourceImg.resize({}, nullptr);
             }
-
-            sourceTexture.loadFromImage(sourceImg);
-
-            const int tileSize = (sourceImg.getSize().x / tileCount.x) - currentPadding * 2;
-
-            const auto newSize = tileCount * (tileSize + targetPadding * 2);
-            targetImg = sf::Image(sf::Vector2u(newSize));
-
-            for (int x = 0; x < tileCount.x; x++)
+            else
             {
-                for (int y = 0; y < tileCount.y; y++)
+                sourceTexture.loadFromImage(sourceImg);
+
+                const int tileSize = (sourceImg.getSize().x / tileCount.x) - currentPadding * 2;
+
+                const auto newSize = tileCount * (tileSize + targetPadding * 2);
+                targetImg = sf::Image(sf::Vector2u(newSize));
+
+                for (int x = 0; x < tileCount.x; x++)
                 {
-                    const sf::Vector2i srcPos{ (tileSize + currentPadding * 2) * x + currentPadding, (tileSize + currentPadding * 2) * y + currentPadding };
-                    const sf::Vector2i targetPos{ (tileSize + targetPadding * 2) * x + targetPadding, (tileSize + targetPadding * 2) * y + targetPadding };
-                    targetImg.copy(sourceImg, sf::Vector2u(targetPos), sf::IntRect(srcPos, {tileSize, tileSize}));
-
-                    for (int z = 0; z < tileSize; z++)
+                    for (int y = 0; y < tileCount.y; y++)
                     {
-                        for (int w = 0; w < targetPadding; w++)
+                        const sf::Vector2i srcPos{ (tileSize + currentPadding * 2) * x + currentPadding, (tileSize + currentPadding * 2) * y + currentPadding };
+                        const sf::Vector2i targetPos{ (tileSize + targetPadding * 2) * x + targetPadding, (tileSize + targetPadding * 2) * y + targetPadding };
+                        targetImg.copy(sourceImg, sf::Vector2u(targetPos), sf::IntRect(srcPos, { tileSize, tileSize }));
+
+                        for (int z = 0; z < tileSize; z++)
                         {
-                            targetImg.setPixel(sf::Vector2u(targetPos.x - w - 1, targetPos.y + z), sourceImg.getPixel({ sf::Vector2u(srcPos.x, srcPos.y + z) }));
-                            targetImg.setPixel(sf::Vector2u(targetPos.x + tileSize + w, targetPos.y + z), sourceImg.getPixel({ sf::Vector2u(srcPos.x + tileSize - 1, srcPos.y + z) }));
-                            targetImg.setPixel(sf::Vector2u(targetPos.x + z, targetPos.y - w - 1), sourceImg.getPixel({ sf::Vector2u(srcPos.x + z, srcPos.y) }));
-                            targetImg.setPixel(sf::Vector2u(targetPos.x + z, targetPos.y + tileSize + w), sourceImg.getPixel({sf::Vector2u(srcPos.x + z, srcPos.y + tileSize - 1)}));
+                            for (int w = 0; w < targetPadding; w++)
+                            {
+                                targetImg.setPixel(sf::Vector2u(targetPos.x - w - 1, targetPos.y + z), sourceImg.getPixel({ sf::Vector2u(srcPos.x, srcPos.y + z) }));
+                                targetImg.setPixel(sf::Vector2u(targetPos.x + tileSize + w, targetPos.y + z), sourceImg.getPixel({ sf::Vector2u(srcPos.x + tileSize - 1, srcPos.y + z) }));
+                                targetImg.setPixel(sf::Vector2u(targetPos.x + z, targetPos.y - w - 1), sourceImg.getPixel({ sf::Vector2u(srcPos.x + z, srcPos.y) }));
+                                targetImg.setPixel(sf::Vector2u(targetPos.x + z, targetPos.y + tileSize + w), sourceImg.getPixel({ sf::Vector2u(srcPos.x + z, srcPos.y + tileSize - 1) }));
+                            }
                         }
-                    }
 
-                    for (int z = 0; z < targetPadding; z++)
-                    {
-                        for (int w = 0; w < targetPadding; w++)
+                        for (int z = 0; z < targetPadding; z++)
                         {
-                            targetImg.setPixel(sf::Vector2u(targetPos.x - w - 1, targetPos.y - z - 1), sourceImg.getPixel({ sf::Vector2u(srcPos.x, srcPos.y) }));
-                            targetImg.setPixel(sf::Vector2u(targetPos.x + w + tileSize, targetPos.y - z - 1), sourceImg.getPixel({ sf::Vector2u(srcPos.x + tileSize - 1, srcPos.y) }));
-                            targetImg.setPixel(sf::Vector2u(targetPos.x - w - 1, targetPos.y + z + tileSize), sourceImg.getPixel({ sf::Vector2u(srcPos.x, srcPos.y + tileSize - 1) }));
-                            targetImg.setPixel(sf::Vector2u(targetPos.x + w + tileSize, targetPos.y + z + tileSize), sourceImg.getPixel({ sf::Vector2u(srcPos.x + tileSize - 1, srcPos.y + tileSize - 1) }));
+                            for (int w = 0; w < targetPadding; w++)
+                            {
+                                targetImg.setPixel(sf::Vector2u(targetPos.x - w - 1, targetPos.y - z - 1), sourceImg.getPixel({ sf::Vector2u(srcPos.x, srcPos.y) }));
+                                targetImg.setPixel(sf::Vector2u(targetPos.x + w + tileSize, targetPos.y - z - 1), sourceImg.getPixel({ sf::Vector2u(srcPos.x + tileSize - 1, srcPos.y) }));
+                                targetImg.setPixel(sf::Vector2u(targetPos.x - w - 1, targetPos.y + z + tileSize), sourceImg.getPixel({ sf::Vector2u(srcPos.x, srcPos.y + tileSize - 1) }));
+                                targetImg.setPixel(sf::Vector2u(targetPos.x + w + tileSize, targetPos.y + z + tileSize), sourceImg.getPixel({ sf::Vector2u(srcPos.x + tileSize - 1, srcPos.y + tileSize - 1) }));
+                            }
                         }
                     }
                 }
+
+                const std::filesystem::path originalPath(texturePath);
+                auto path = originalPath;
+                path.replace_extension().replace_filename(path.filename().string() + "_padded").replace_extension(originalPath.extension());
+
+                targetImg.saveToFile(path.string());
+                targetTexture.loadFromImage(targetImg);
             }
-
-            const std::filesystem::path originalPath(texturePath);
-            auto path = originalPath;
-            path.replace_extension().replace_filename(path.filename().string() + "_padded").replace_extension(originalPath.extension());
-
-            targetImg.saveToFile(path.string());
-            targetTexture.loadFromImage(targetImg);
         }
 
         window.clear();
